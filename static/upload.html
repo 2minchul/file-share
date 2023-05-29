@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>일회용 파일 공유 서비스</title>
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.5.0/semantic.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.5.0/semantic.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"
+            integrity="sha512-uMtXmF28A2Ab/JJO2t/vYhlaa/3ahUOgj1Zf27M5rOo8/+fcTUVH0/E0ll68njmjrLqOBjXM3V9NiPFL5ywWPQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        .dropzone {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .upload-button {
+            margin-top: 10px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        #selectedFileName {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="ui container">
+    <h1>일회용 파일 공유 서비스</h1>
+    <div id="dropzone" class="dropzone">
+        <p>파일을 여기에 끌어서 놓으세요</p>
+        <button id="uploadButton" class="ui button">업로드할 파일을 선택하세요</button>
+        <input type="file" id="fileInput">
+    </div>
+    <div id="uploadOptions" style="display: none;">
+        <p id="selectedFileName">
+            <i class="file outline icon"></i>
+            <span id="fileNameText"></span>
+        </p>
+        <p>다운로드 <input type="number" id="expiryInput" value="1"> 회 후 만료됨</p>
+        <button id="uploadFileButton" class="ui button">업로드</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#uploadButton').click(function () {
+            $('#fileInput').click();
+        });
+
+        $('#fileInput').change(function () {
+            var fileInput = document.getElementById('fileInput');
+            var fileNameText = document.getElementById('fileNameText');
+            fileNameText.textContent = fileInput.files[0].name;
+
+            $('#dropzone').hide();
+            $('#uploadOptions').show();
+        });
+
+        $('#uploadFileButton').click(function () {
+            var expiry = $('#expiryInput').val();
+            var fileInput = document.getElementById('fileInput');
+            var file = fileInput.files[0];
+
+            // 파일 업로드 로직
+            var downloadCount = document.getElementById('expiryInput');
+            var formData = new FormData();
+            formData.append('file', file);
+            formData.append('download_count', downloadCount.value);
+
+            axios.post('http://127.0.0.1:8080/api/file', formData)
+                .then(function (response) {
+                    var url = response.data.url;
+                    window.location.href = url;
+                })
+                .catch(function (error) {
+                    console.error(error);
+                });
+
+            // 업로드 후 초기화
+            $('#dropzone').show();
+            $('#uploadOptions').hide();
+            $('#fileInput').val('');
+            $('#fileNameText').text('');
+        });
+    });
+</script>
+</body>
+</html>
